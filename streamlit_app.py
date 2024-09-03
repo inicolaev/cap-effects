@@ -1,22 +1,24 @@
 import streamlit as st
 import streamlit_authenticator as stauth
 
-# Define your users and passwords
+# User credentials
 names = ["John Doe", "Jane Doe"]
 usernames = ["johndoe", "janedoe"]
-passwords = ["123", "456"]
+passwords = ["password1", "password2"]
 
-# Hash the passwords
+# Hash passwords
 hashed_passwords = stauth.Hasher(passwords).generate()
 
-# Create authenticator
-authenticator = stauth.Authenticate(names, usernames, hashed_passwords, "some_cookie_name", "some_signature_key", cookie_expiry_days=30)
+# Create the authenticator object
+authenticator = stauth.Authenticate(names=names, usernames=usernames, passwords=hashed_passwords, 
+                                    cookie_name="some_cookie_name", cookie_key="some_signature_key",
+                                    cookie_expiry_days=30)
 
-# Login
+# Login process
 name, authentication_status, username = authenticator.login("Login", "main")
 
-# If login is successful
 if authentication_status:
+    authenticator.logout("Logout", "sidebar")
     st.write(f'Welcome *{name}*')
     st.write("Add your Streamlit dashboard code here")
 elif authentication_status == False:
