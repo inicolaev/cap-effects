@@ -1,38 +1,38 @@
 import streamlit as st
-import streamlit_authenticator as stauth
 
-# Define your users, usernames, and passwords
-names = ["John Doe", "Jane Doe"]
-usernames = ["johndoe", "janedoe"]
-passwords = ["password1", "password2"]
+# Store the correct username and password as a dictionary
+users = {
+    "admin": "pass123" 
+}
 
-# Hash the passwords
-hashed_passwords = stauth.Hasher(passwords).generate()
+def check_password(username, password):
+  """Checks if the provided username and password match the stored credentials."""
+  if username in users and users[username] == password:
+    return True
+  return False
 
-# Create the authenticator object
-authenticator = stauth.Authenticate(
-    credentials={"usernames": 
-                    {"johndoe": {"name": "John Doe", "password": hashed_passwords[0]},
-                     "janedoe": {"name": "Jane Doe", "password": hashed_passwords[1]}
-                    }
-                 },
-    cookie_name="some_cookie_name",
-    key="some_signature_key",
-    cookie_expiry_days=30
-)
+def login_form():
+  """Renders a login form within the app."""
+  st.sidebar.subheader("Login")
+  username = st.sidebar.text_input("Username")
+  password = st.sidebar.text_input("Password", type="password")
+  login_button = st.sidebar.button("Login")
 
-# Login process
-name, authentication_status, username = authenticator.login("Login", "main")
+  if login_button:
+    if check_password(username, password):
+      st.session_state["authenticated"] = True
+      st.sidebar.success("Logged in as {}".format(username))
+    else:
+      st.sidebar.error("Incorrect username or password")
 
-# If login is successful
-if authentication_status:
-    authenticator.logout("Logout", "sidebar")
-    st.write(f'Welcome *{name}*')
-    st.write("This is the main content of the dashboard.")
-elif authentication_status == False:
-    st.error('Username/password is incorrect')
-elif authentication_status == None:
-    st.warning('Please enter your username and password')
+# Initialize 'authenticated' in session state if not already present
+if "authenticated" not in st.session_state:
+  st.session_state["authenticated"] = False
 
-x = st.slider("Select a value")
-st.write(x, "squared is", x * x)
+if not st.session_state["authenticated"]:
+  login_form()
+else:
+  # User is authenticated, display the main content
+  st.title("My Streamlit App")
+  x = st.slider("Select a value")
+  st.write(x, "squared is", x * x)
