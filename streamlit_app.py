@@ -15,8 +15,16 @@ def plot_unsold_cap_interactive(gdf, cap_value):
     # Make sure the column is in the correct data type
     gdf[column_name] = gdf[column_name].astype(float)
     
-    # Initialize the map centered around Canada
-    m = folium.Map(location=[56.1304, -106.3468], zoom_start=4)
+    # Retrieve previous map center and zoom if it exists
+    if "last_center" in st.session_state and "last_zoom" in st.session_state:
+        last_center = st.session_state["last_center"]
+        last_zoom = st.session_state["last_zoom"]
+    else:
+        last_center = [56.1304, -106.3468]
+        last_zoom = 4
+    
+    # Initialize the map with the previous or default center/zoom
+    m = folium.Map(location=last_center, zoom_start=last_zoom)
     
     # Define bins for the legend
     bins = list(range(15))  # Creates bins from 0 to 14
@@ -47,9 +55,30 @@ def plot_unsold_cap_interactive(gdf, cap_value):
             tooltip=tooltip,
             style_function=lambda x: {'fillColor': '#ffffff00', 'weight': 0}
         ).add_to(m)
-    
+
     folium.LayerControl().add_to(m)
+
+    # Add script to save map center and zoom level on change
+    save_center_zoom_js = """
+    function save_center_zoom() {
+        var map_center = [map.getCenter().lat, map.getCenter().lng];
+        var map_zoom = map.getZoom();
+        document.getElementById('last_center').value = map_center;
+        document.getElementById('last_zoom').value = map_zoom;
+    }
+    map.on('moveend', save_center_zoom);
+    map.on('zoomend', save_center_zoom);
+    """
+    m.get_root().html.add_child(folium.Element("""
+        <input type="hidden" id="last_center" name="last_center" value="{}">
+        <input type="hidden" id="last_zoom" name="last_zoom" value="{}">
+    """.format(last_center, last_zoom)))
+    m.get_root().script.add_child(folium.Element(save_center_zoom_js))
+
+    # Streamlit custom event to read hidden inputs and save state
     folium_static(m)
+    st.session_state["last_center"] = eval(st.experimental_get_query_params().get('last_center', '[]')[0])
+    st.session_state["last_zoom"] = int(st.experimental_get_query_params().get('last_zoom', [last_zoom])[0])
 
 # Load the data
 file_path = 'cap_effects.csv'
