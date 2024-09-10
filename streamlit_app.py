@@ -2,25 +2,26 @@ import streamlit as st
 import geopandas as gpd
 import pandas as pd
 from shapely import wkt
-import matplotlib.pyplot as plt
+import folium
+from folium.plugins import MousePosition
+from streamlit_folium import folium_static
 
-def plot_unsold_cap(gdf, cap_value, vmin, vmax):
+def plot_unsold_cap_interactive(gdf, cap_value):
     column_name = f"unsold_cap_{cap_value}"
     # Check if the column exists
     if column_name not in gdf.columns:
         st.error(f"Column {column_name} does not exist in the dataframe.")
         return
-
-    # Plotting the map with fixed vmin and vmax
-    fig, ax = plt.subplots(figsize=(10, 10))
-    gdf.plot(column=column_name, legend=True, cmap='OrRd', vmin=vmin, vmax=vmax, ax=ax)
-
-    # Customize legend
-    cax = fig.get_axes()[1]
-    cax.set_title("Number of unsold blocks")
-
-    plt.title("Unsold Blocks Based on Spectrum Cap")
-    st.pyplot(fig)
+        
+    # Initialize the map centered around Canada
+    m = folium.Map(location=[56.1304, -106.3468], zoom_start=4)
+    
+    # Add tooltips to each service area
+    for _, row in gdf.iterrows():
+        tooltip = folium.Tooltip(f"Service Area: {row['service_area']}<br>Unsold Blocks: {row[column_name]}")
+        folium.GeoJson(row['geometry'], tooltip=tooltip).add_to(m)
+    
+    folium_static(m)
 
 # Load the data
 file_path = 'cap_effects.csv'
@@ -41,10 +42,10 @@ min_value = gdf[[f'unsold_cap_{i}' for i in range(10, 14)]].min().min()
 max_value = gdf[[f'unsold_cap_{i}' for i in range(10, 14)]].max().max()
 
 # Streamlit app
-st.title("Canadian Tier 4 Service Areas Cap Visualization")
+st.title("Impact of Spectrum Cap on the 3800 MHz and Residual Auction")
 
 # Sidebar for user input
 cap_value = st.sidebar.slider("Select Cap Value", min_value=10, max_value=13, value=10)
 
-# Plot the map with consistent legend scaling
-plot_unsold_cap(gdf, cap_value, vmin=min_value, vmax=max_value)
+# Plot the interactive map
+plot_unsold_cap_interactive(gdf, cap_value)
