@@ -3,7 +3,6 @@ import geopandas as gpd
 import pandas as pd
 from shapely import wkt
 import folium
-from folium.plugins import MousePosition
 from streamlit_folium import folium_static
 
 def plot_unsold_cap_interactive(gdf, cap_value):
@@ -18,7 +17,7 @@ def plot_unsold_cap_interactive(gdf, cap_value):
     
     # Add tooltips to each service area
     for _, row in gdf.iterrows():
-        tooltip = folium.Tooltip(f"Service Area: {row['service_area']}<br>Unsold Blocks: {row[column_name]}")
+        tooltip = folium.Tooltip(f"Service Area: {row['Service Area #']}<br>Unsold Blocks: {row[column_name]}")
         folium.GeoJson(row['geometry'], tooltip=tooltip).add_to(m)
     
     folium_static(m)
