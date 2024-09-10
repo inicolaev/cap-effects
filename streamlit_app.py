@@ -10,10 +10,16 @@ def plot_unsold_cap(gdf, cap_value, vmin, vmax):
     if column_name not in gdf.columns:
         st.error(f"Column {column_name} does not exist in the dataframe.")
         return
+
     # Plotting the map with fixed vmin and vmax
     fig, ax = plt.subplots(figsize=(10, 10))
     gdf.plot(column=column_name, legend=True, cmap='OrRd', vmin=vmin, vmax=vmax, ax=ax)
-    plt.title(f"Unsold Cap {cap_value} Visualization")
+
+    # Customize legend
+    cax = fig.get_axes()[1]
+    cax.set_title("Number of unsold blocks")
+
+    plt.title("Unsold Blocks Based on Spectrum Cap")
     st.pyplot(fig)
 
 # Load the data
