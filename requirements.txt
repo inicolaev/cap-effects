@@ -1,2 +1,6 @@
 streamlit
 streamlit-authenticator
+geopandas
+pandas
+shapely
+matplotlib
