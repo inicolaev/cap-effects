@@ -4,3 +4,5 @@ geopandas
 pandas
 shapely
 matplotlib
+folium
+streamlit-folium
