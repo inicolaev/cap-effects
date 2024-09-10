@@ -11,20 +11,18 @@ def plot_unsold_cap_interactive(gdf, cap_value):
     if column_name not in gdf.columns:
         st.error(f"Column {column_name} does not exist in the dataframe.")
         return
-
+    
     # Make sure the column is in the correct data type
     gdf[column_name] = gdf[column_name].astype(float)
     
-    # Retrieve previous map center and zoom if it exists
-    if "last_center" in st.session_state and "last_zoom" in st.session_state:
-        last_center = st.session_state["last_center"]
-        last_zoom = st.session_state["last_zoom"]
-    else:
-        last_center = [56.1304, -106.3468]
-        last_zoom = 4
+    # Check if the session state has the stored center and zoom
+    if "map_center" not in st.session_state:
+        st.session_state["map_center"] = [56.1304, -106.3468]
+    if "map_zoom" not in st.session_state:
+        st.session_state["map_zoom"] = 4
     
-    # Initialize the map with the previous or default center/zoom
-    m = folium.Map(location=last_center, zoom_start=last_zoom)
+    # Initialize the map with the stored center and zoom
+    m = folium.Map(location=st.session_state["map_center"], zoom_start=st.session_state["map_zoom"])
     
     # Define bins for the legend
     bins = list(range(15))  # Creates bins from 0 to 14
@@ -58,27 +56,25 @@ def plot_unsold_cap_interactive(gdf, cap_value):
 
     folium.LayerControl().add_to(m)
 
-    # Add script to save map center and zoom level on change
+    # Add a custom script to store the map's center and zoom in the session state
     save_center_zoom_js = """
-    function save_center_zoom() {
-        var map_center = [map.getCenter().lat, map.getCenter().lng];
+    function saveMapCenterZoom(map) {
+        var map_center = map.getCenter();
         var map_zoom = map.getZoom();
-        document.getElementById('last_center').value = map_center;
-        document.getElementById('last_zoom').value = map_zoom;
+        sessionStorage.setItem('map_center', JSON.stringify(map_center));
+        sessionStorage.setItem('map_zoom', map_zoom);
     }
-    map.on('moveend', save_center_zoom);
-    map.on('zoomend', save_center_zoom);
+    map.on('moveend', function() { saveMapCenterZoom(map); });
+    map.on('zoomend', function() { saveMapCenterZoom(map); });
     """
-    m.get_root().html.add_child(folium.Element("""
-        <input type="hidden" id="last_center" name="last_center" value="{}">
-        <input type="hidden" id="last_zoom" name="last_zoom" value="{}">
-    """.format(last_center, last_zoom)))
     m.get_root().script.add_child(folium.Element(save_center_zoom_js))
 
-    # Streamlit custom event to read hidden inputs and save state
     folium_static(m)
-    st.session_state["last_center"] = eval(st.experimental_get_query_params().get('last_center', '[]')[0])
-    st.session_state["last_zoom"] = int(st.experimental_get_query_params().get('last_zoom', [last_zoom])[0])
+    
+    # Save the map's center and zoom level in the session state after the map is rendered
+    if st.experimental_get_query_params().get('map_center') and st.experimental_get_query_params().get('map_zoom'):
+        st.session_state["map_center"] = eval(st.experimental_get_query_params().get('map_center')[0])
+        st.session_state["map_zoom"] = int(st.experimental_get_query_params().get('map_zoom')[0])
 
 # Load the data
 file_path = 'cap_effects.csv'
