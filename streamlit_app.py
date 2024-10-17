@@ -101,7 +101,7 @@ def plot_unsold_cap_interactive(gdf, cap_value):
 
     # Set fixed width and height for the map
     width = 1300
-    height = 800
+    height = 650
 
     # Display the map with custom width and height
     folium_static(m, width=width, height=height)
