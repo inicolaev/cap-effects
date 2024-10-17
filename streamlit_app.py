@@ -26,7 +26,7 @@ def plot_unsold_cap_interactive(gdf, cap_value):
     if "map_center" not in st.session_state:
         st.session_state["map_center"] = [56.1304, -106.3468]
     if "map_zoom" not in st.session_state:
-        st.session_state["map_zoom"] = 1
+        st.session_state["map_zoom"] = 4
     
     m = folium.Map(location=st.session_state["map_center"], zoom_start=st.session_state["map_zoom"])
     
@@ -100,7 +100,7 @@ def plot_unsold_cap_interactive(gdf, cap_value):
     m.get_root().script.add_child(folium.Element(save_center_zoom_js))
 
     # Set fixed width and height for the map
-    width = 1000
+    width = 1200
     height = 600
 
     # Display the map with custom width and height
