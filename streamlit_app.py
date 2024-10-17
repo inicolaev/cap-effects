@@ -103,7 +103,7 @@ def plot_unsold_cap_interactive(gdf, cap_value):
 
     # Calculate and display the sum of unsold blocks
     sum_unsold_blocks = gdf[column_name].sum()
-    st.write(f"Sum of unsold blocks for cap {cap_value}: {sum_unsold_blocks}")
+    st.write(f"Sum of unsold blocks for cap of {cap_value} blocks: {int(sum_unsold_blocks)}")
 
 # Load the new dataset
 file_path = 'cap_effects.csv'  # Adjust this to the correct file path
