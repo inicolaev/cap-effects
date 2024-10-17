@@ -26,10 +26,10 @@ def plot_unsold_cap_interactive(gdf, cap_value):
     
     m = folium.Map(location=st.session_state["map_center"], zoom_start=st.session_state["map_zoom"])
     
-    # Create a custom colormap
+    # Create a custom colormap for values > 1
     colormap = cm.LinearColormap(
-        colors=['#00FF00', '#FFFF00', '#FFA500', '#FF0000'],
-        vmin=0,
+        colors=['#FFA500', '#FF0000'],
+        vmin=1,
         vmax=max_value
     )
     
@@ -37,6 +37,8 @@ def plot_unsold_cap_interactive(gdf, cap_value):
     def get_color(value):
         if value == 0:
             return '#00FF00'  # Green
+        elif value == 1:
+            return '#FFFF00'  # Yellow
         else:
             return colormap(value)
 
@@ -65,9 +67,18 @@ def plot_unsold_cap_interactive(gdf, cap_value):
         ),
     ).add_to(m)
 
-    # Add colormap to the map
-    colormap.add_to(m)
-    colormap.caption = 'Number of unsold blocks'
+    # Create a custom color legend
+    legend_html = '''
+    <div style="position: fixed; bottom: 50px; left: 50px; width: 220px; height: 120px; 
+                border:2px solid grey; z-index:9999; font-size:14px; background-color:white;
+                ">&nbsp; <b>Number of unsold blocks</b> <br>
+    &nbsp; <i class="fa fa-square" style="color:#00FF00;"></i> 0 <br>
+    &nbsp; <i class="fa fa-square" style="color:#FFFF00;"></i> 1 <br>
+    &nbsp; <i class="fa fa-square" style="color:#FFA500;"></i> 2 <br>
+    &nbsp; <i class="fa fa-square" style="color:#FF0000;"></i> {:.0f}+ <br>
+    </div>
+    '''.format(max_value)
+    m.get_root().html.add_child(folium.Element(legend_html))
 
     folium.LayerControl().add_to(m)
 
