@@ -4,46 +4,45 @@ import pandas as pd
 from shapely import wkt
 import folium
 from streamlit_folium import folium_static
+import numpy as np
 
 def plot_unsold_cap_interactive(gdf, cap_value):
     column_name = f"unsold_cap_{cap_value}"
-    # Check if the column exists
     if column_name not in gdf.columns:
         st.error(f"Column {column_name} does not exist in the dataframe.")
         return
     
-    # Make sure the column is in the correct data type and remove NaN values
     gdf[column_name] = gdf[column_name].astype(float)
     gdf = gdf.dropna(subset=[column_name])
     
-    # Print data range for debugging
-    print(f"Min value: {gdf[column_name].min()}, Max value: {gdf[column_name].max()}")
+    min_value = gdf[column_name].min()
+    max_value = gdf[column_name].max()
+    print(f"Min value: {min_value}, Max value: {max_value}")
     
-    # Create bins using quartiles
-    bins = list(gdf[column_name].quantile([0, 0.25, 0.5, 0.75, 1]))
-    bins = sorted(list(set([int(b) for b in bins])))  # Remove duplicates and sort
+    # Create at least 4 bins
+    if min_value == max_value:
+        bins = [min_value - 1, min_value, min_value + 1, min_value + 2]
+    else:
+        bins = np.linspace(min_value, max_value, num=5)
+    bins = sorted(list(set([float(round(b, 2)) for b in bins])))
     
-    # Print bins and sample data for debugging
     print(f"Bins: {bins}")
     print(f"Sample data: {gdf[column_name].head()}")
     
-    # Check if the session state has the stored center and zoom
     if "map_center" not in st.session_state:
         st.session_state["map_center"] = [56.1304, -106.3468]
     if "map_zoom" not in st.session_state:
         st.session_state["map_zoom"] = 4
     
-    # Initialize the map with the stored center and zoom
     m = folium.Map(location=st.session_state["map_center"], zoom_start=st.session_state["map_zoom"])
     
-    # Create a choropleth map
     choropleth = folium.Choropleth(
         geo_data=gdf,
         name="choropleth",
         data=gdf,
         columns=["Service Area #", column_name],
         key_on="feature.properties.Service Area #",
-        fill_color="OrRd",
+        fill_color="YlOrRd",
         fill_opacity=0.7,
         line_opacity=0.2,
         legend_name="Number of unsold blocks",
@@ -80,7 +79,6 @@ def plot_unsold_cap_interactive(gdf, cap_value):
 
     folium_static(m)
     
-    # Save the map's center and zoom level in the session state after the map is rendered
     if st.experimental_get_query_params().get('map_center') and st.experimental_get_query_params().get('map_zoom'):
         st.session_state["map_center"] = eval(st.experimental_get_query_params().get('map_center')[0])
         st.session_state["map_zoom"] = int(st.experimental_get_query_params().get('map_zoom')[0])
