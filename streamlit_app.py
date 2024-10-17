@@ -100,8 +100,8 @@ def plot_unsold_cap_interactive(gdf, cap_value):
     m.get_root().script.add_child(folium.Element(save_center_zoom_js))
 
     # Set fixed width and height for the map
-    width = 1200
-    height = 600
+    width = 1300
+    height = 800
 
     # Display the map with custom width and height
     folium_static(m, width=width, height=height)
