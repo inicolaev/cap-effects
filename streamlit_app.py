@@ -6,6 +6,10 @@ import folium
 from streamlit_folium import folium_static
 import numpy as np
 import branca.colormap as cm
+from streamlit.config import get_option
+
+# Set the page to wide mode
+st.set_page_config(layout="wide")
 
 def plot_unsold_cap_interactive(gdf, cap_value):
     column_name = f"unsold_cap_{cap_value}"
@@ -95,7 +99,18 @@ def plot_unsold_cap_interactive(gdf, cap_value):
     """
     m.get_root().script.add_child(folium.Element(save_center_zoom_js))
 
-    folium_static(m)
+    # Get the width of the streamlit container
+    container_width = get_option("theme.layout.content_width")
+    if container_width == "wide":
+        width = 1200
+    else:
+        width = 800
+
+    # Set the height (you can adjust this value as needed)
+    height = 600
+
+    # Display the map with custom width and height
+    folium_static(m, width=width, height=height)
     
     if st.experimental_get_query_params().get('map_center') and st.experimental_get_query_params().get('map_zoom'):
         st.session_state["map_center"] = eval(st.experimental_get_query_params().get('map_center')[0])
