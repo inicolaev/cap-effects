@@ -12,8 +12,20 @@ def plot_unsold_cap_interactive(gdf, cap_value):
         st.error(f"Column {column_name} does not exist in the dataframe.")
         return
     
-    # Make sure the column is in the correct data type
+    # Make sure the column is in the correct data type and remove NaN values
     gdf[column_name] = gdf[column_name].astype(float)
+    gdf = gdf.dropna(subset=[column_name])
+    
+    # Print data range for debugging
+    print(f"Min value: {gdf[column_name].min()}, Max value: {gdf[column_name].max()}")
+    
+    # Create bins using quartiles
+    bins = list(gdf[column_name].quantile([0, 0.25, 0.5, 0.75, 1]))
+    bins = sorted(list(set([int(b) for b in bins])))  # Remove duplicates and sort
+    
+    # Print bins and sample data for debugging
+    print(f"Bins: {bins}")
+    print(f"Sample data: {gdf[column_name].head()}")
     
     # Check if the session state has the stored center and zoom
     if "map_center" not in st.session_state:
@@ -24,9 +36,6 @@ def plot_unsold_cap_interactive(gdf, cap_value):
     # Initialize the map with the stored center and zoom
     m = folium.Map(location=st.session_state["map_center"], zoom_start=st.session_state["map_zoom"])
     
-    # Define bins for the legend
-    bins = list(range(15))  # Creates bins from 0 to 14
-
     # Create a choropleth map
     choropleth = folium.Choropleth(
         geo_data=gdf,
