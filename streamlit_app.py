@@ -99,14 +99,8 @@ def plot_unsold_cap_interactive(gdf, cap_value):
     """
     m.get_root().script.add_child(folium.Element(save_center_zoom_js))
 
-    # Get the width of the streamlit container
-    container_width = get_option("theme.layout.content_width")
-    if container_width == "wide":
-        width = 1200
-    else:
-        width = 800
-
-    # Set the height (you can adjust this value as needed)
+    # Set fixed width and height for the map
+    width = 1000
     height = 600
 
     # Display the map with custom width and height
@@ -119,6 +113,7 @@ def plot_unsold_cap_interactive(gdf, cap_value):
     # Calculate and display the sum of unsold blocks
     sum_unsold_blocks = gdf[column_name].sum()
     st.write(f"Sum of unsold blocks for cap of {cap_value} blocks: {int(sum_unsold_blocks)}")
+
 
 # Load the new dataset
 file_path = 'cap_effects.csv'  # Adjust this to the correct file path
