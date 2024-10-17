@@ -5,6 +5,7 @@ from shapely import wkt
 import folium
 from streamlit_folium import folium_static
 import numpy as np
+import branca.colormap as cm
 
 def plot_unsold_cap_interactive(gdf, cap_value):
     column_name = f"unsold_cap_{cap_value}"
@@ -17,17 +18,6 @@ def plot_unsold_cap_interactive(gdf, cap_value):
     
     min_value = gdf[column_name].min()
     max_value = gdf[column_name].max()
-    print(f"Min value: {min_value}, Max value: {max_value}")
-    
-    # Create at least 4 bins
-    if min_value == max_value:
-        bins = [min_value - 1, min_value, min_value + 1, min_value + 2]
-    else:
-        bins = np.linspace(min_value, max_value, num=5)
-    bins = sorted(list(set([float(round(b, 2)) for b in bins])))
-    
-    print(f"Bins: {bins}")
-    print(f"Sample data: {gdf[column_name].head()}")
     
     if "map_center" not in st.session_state:
         st.session_state["map_center"] = [56.1304, -106.3468]
@@ -36,14 +26,19 @@ def plot_unsold_cap_interactive(gdf, cap_value):
     
     m = folium.Map(location=st.session_state["map_center"], zoom_start=st.session_state["map_zoom"])
     
+    # Create a custom colormap
+    colormap = cm.LinearColormap(
+        colors=['#00FF00', '#FFFF00', '#FFA500', '#FF0000'],
+        vmin=0,
+        vmax=max_value
+    )
+    
     # Custom color function
     def get_color(value):
         if value == 0:
             return '#00FF00'  # Green
-        elif value > 0:
-            return '#FF0000'  # Red
         else:
-            return '#FFFFFF'  # White
+            return colormap(value)
 
     # Add GeoJson layer with custom style
     folium.GeoJson(
@@ -69,6 +64,10 @@ def plot_unsold_cap_interactive(gdf, cap_value):
             max_width=800,
         ),
     ).add_to(m)
+
+    # Add colormap to the map
+    colormap.add_to(m)
+    colormap.caption = 'Number of unsold blocks'
 
     folium.LayerControl().add_to(m)
 
