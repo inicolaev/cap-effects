@@ -26,7 +26,7 @@ def plot_unsold_cap_interactive(gdf, cap_value):
     if "map_center" not in st.session_state:
         st.session_state["map_center"] = [56.1304, -106.3468]
     if "map_zoom" not in st.session_state:
-        st.session_state["map_zoom"] = 3
+        st.session_state["map_zoom"] = 1
     
     m = folium.Map(location=st.session_state["map_center"], zoom_start=st.session_state["map_zoom"])
     
